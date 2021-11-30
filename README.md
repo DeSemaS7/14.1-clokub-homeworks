@@ -77,7 +77,7 @@ desema@control1:~$ sudo kubectl get secret domain-cert -o yaml > /tmp/domain-cer
 desema@control1:~$ sudo kubectl delete secret domain-cert
 secret "domain-cert" deleted
 ```
-чтобы загрузить обратно сохранённый секрет можно воспользоваться стандартной командой deploy и указать ямл что был экспортирован выше:
+чтобы загрузить обратно сохранённый секрет можно воспользоваться стандартной командой apply и указать ямл что был экспортирован выше:
 
 ```shell
 desema@control1:~$ sudo kubectl apply -f /tmp/domain-cert.yml
