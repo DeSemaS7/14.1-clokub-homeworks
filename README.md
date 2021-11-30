@@ -83,3 +83,81 @@ secret "domain-cert" deleted
 desema@control1:~$ sudo kubectl apply -f /tmp/domain-cert.yml
 secret/domain-cert created
 ```
+
+
+# Задача 2 (*): Работа с секретами внутри модуля
+создадим простой секрет:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+stringData:
+    slogin: "sEcReT_lOgIn"
+    spassword: "SeCreT_p@$$w0rd"
+```
+
+Подготовим деплоймент и определим в неём ссылку на этот секрет двумя способами. через переменные окружения и через монтирование тома:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: permitted
+  name: permitted
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: permitted
+  template:
+    metadata:
+      labels:
+        app: permitted
+    spec:
+      containers:
+        - image: praqma/network-multitool:alpine-extra
+          imagePullPolicy: IfNotPresent
+          name: multitool
+          env:
+          - name: slogin_ENV
+            valueFrom:
+              secretKeyRef:
+                name: mysecret
+                key: slogin
+          - name: spassword_ENV
+            valueFrom:
+              secretKeyRef:
+                name: mysecret
+                key: spassword
+          volumeMounts:
+          - name: foo
+            mountPath: "/etc/foo"
+            readOnly: true
+      volumes:
+        - name: foo
+          secret:
+            secretName: mysecret      
+```
+Запустим деплоймент, подключимся к поду и проверим:
+
+```shell
+desema@control1:~$ sudo kubectl exec --stdin --tty permitted-76f9dfc664-9r6ws -- /bin/bash
+bash-5.1# printenv | grep ENV
+spassword_ENV=SeCreT_p@$$w0rd
+slogin_ENV=sEcReT_lOgIn
+bash-5.1#
+bash-5.1# ls -l /etc/foo
+total 0
+lrwxrwxrwx    1 root     root            12 Nov 30 12:37 login -> ..data/login
+lrwxrwxrwx    1 root     root            15 Nov 30 12:37 password -> ..data/password
+lrwxrwxrwx    1 root     root            13 Nov 30 12:37 slogin -> ..data/slogin
+lrwxrwxrwx    1 root     root            16 Nov 30 12:37 spassword -> ..data/spassword
+bash-5.1# cat /etc/foo/slogin
+sEcReT_lOgInbash-5.1#
+bash-5.1# cat /etc/foo/spassword
+SeCreT_p@$$w0rdbash-5.1#
+bash-5.1#
+```
