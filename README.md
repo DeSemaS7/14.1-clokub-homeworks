@@ -2,6 +2,16 @@
 
 Повторил описанные команды, было весело.
 <br>
+
+вот список:
+```shell
+NAME                                            TYPE                                  DATA   AGE
+default-token-mnhwx                             kubernetes.io/service-account-token   3      43d
+domain-cert                                     kubernetes.io/tls                     2      25h
+domain-cert-mod                                 kubernetes.io/tls                     2      25h
+nfs-server-nfs-server-provisioner-token-8txnf   kubernetes.io/service-account-token   3      30d
+sh.helm.release.v1.nfs-server.v1                helm.sh/release.v1                    1      30d
+```
 На выходе заимел yaml для деплоя tls серта:
 
 ```
